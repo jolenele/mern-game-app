@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@livechat/ui-kit": "^0.4.0-10",
     "@material-ui/core": "^4.9.4",
     "@material-ui/icons": "^4.9.1",
     "@testing-library/jest-dom": "^4.2.4",
@@ -14,6 +15,7 @@
     "package_name": "^1.0.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
+    "react-foundation": "^0.9.6",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.3.1",
     "socket.io": "^2.3.0",

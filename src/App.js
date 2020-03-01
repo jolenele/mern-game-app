@@ -1,7 +1,6 @@
 import React from 'react';
 import config from './config';
 import io from 'socket.io-client';
-
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 
@@ -98,7 +97,9 @@ class App extends React.Component {
                 <Typography variant='subtitle2' align='left'>
                   {msg.username}
                 </Typography>
-                <Typography variant='body1'>{msg.content}</Typography>
+                <Typography variant='body1' align='left'>
+                  {msg.content}
+                </Typography>
               </div>
             );
           })}
