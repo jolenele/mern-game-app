@@ -45,6 +45,7 @@ io.on('connection', socket => {
     .limit(10)
     .exec((err, messages) => {
       if (err) return console.error(err);
+      console.log(messages);
 
       // Send the last messages to the user.
       io.sockets.emit('init', messages);
@@ -52,6 +53,7 @@ io.on('connection', socket => {
 
   // Listen to connected users for a new message.
   socket.on('message', msg => {
+    console.log('NEW MESSAGE : ' + msg);
     // Create a message with the content and the name of the user.
     const message = new Message({
       content: msg.content,
@@ -60,7 +62,7 @@ io.on('connection', socket => {
 
     // Save the message to the database.
     message.save(err => {
-      if (err) return console.error(err);
+      if (err) return console.error('erroooooor');
     });
 
     io.sockets.emit('push', message);
