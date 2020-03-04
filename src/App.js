@@ -1,6 +1,7 @@
 import React from 'react';
-import config from './config';
-import io from 'socket.io-client';
+// import config from './config';
+// import io from 'socket.io-client';
+import socketIOClient from 'socket.io-client';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 
@@ -16,10 +17,11 @@ class App extends React.Component {
       content: '',
       username: '',
     };
+    this.socket = socketIOClient();
   }
 
   componentDidMount() {
-    this.socket = io(config[process.env.NODE_ENV].endpoint);
+    // this.socket = io(config[process.env.NODE_ENV].endpoint);
 
     this.socket.on('init', msg => {
       this.setState(
@@ -38,8 +40,6 @@ class App extends React.Component {
         this.scrollToBottom
       );
     });
-
-    this.socket.emit('typing');
   }
 
   handleContent(event) {
@@ -70,8 +70,8 @@ class App extends React.Component {
       console.log(state);
       console.log('this', this.socket);
       this.socket.emit('message', {
-        username: state.username,
-        content: state.content,
+        username: this.state.username,
+        content: this.state.content,
       });
 
       return {
