@@ -1,12 +1,13 @@
 import React from 'react';
 // import config from './config';
-// import io from 'socket.io-client';
-import socketIOClient from 'socket.io-client';
+import io from 'socket.io-client';
+// import socketIOClient from 'socket.io-client';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 
 import './App.css';
 import ChatBar from './ChatBar';
+// const socket = openSocket('http://localhost:3000');
 
 class App extends React.Component {
   constructor(props) {
@@ -16,30 +17,50 @@ class App extends React.Component {
       chat: [],
       content: '',
       username: '',
+      // socket: socketIOClient(),
     };
-    this.socket = socketIOClient();
+    //this.socket = socketIOClient();
+    // let socket = io.connect('http://localhost:3000');
   }
 
   componentDidMount() {
     // this.socket = io(config[process.env.NODE_ENV].endpoint);
 
-    this.socket.on('init', msg => {
+    const socket = io.connect('http://localhost:3000');
+
+    //Listen on new message
+    socket.on('new_message', data => {
       this.setState(
         state => ({
-          chat: [...state.chat, ...msg.reverse()],
+          chat: [...state.chat, ...data.content.reverse()],
         }),
         this.scrollToBottom
       );
     });
 
-    this.socket.on('push', msg => {
+    // socket.on('new_message', data => {
+    //   this.setState(
+    //     state => ({
+    //       chat: [...state.chat, data],
+    //     }),
+    //     this.scrollToBottom
+    //   );
+    // });
+
+    //Listening on typing
+    socket.on('typing', data => {
       this.setState(
         state => ({
-          chat: [...state.chat, msg],
+          chat: data.username + ' is typing...',
         }),
         this.scrollToBottom
       );
     });
+
+    //Emit typing
+    // this.content.bind('keypress', () => {
+    //   socket.emit('typing');
+    // });
   }
 
   handleContent(event) {
@@ -61,15 +82,18 @@ class App extends React.Component {
   }
 
   handleSubmit(event) {
-    console.log(event);
+    console.log('here is the event : ', event);
 
     // Prevent the form to reload the current page.
     event.preventDefault();
 
+    const socket = io.connect('http://localhost:3000');
+
     this.setState(state => {
-      console.log(state);
-      console.log('this', this.socket);
-      this.socket.emit('message', {
+      // const socket = this.state.socket;
+      // console.log(state);
+      console.log('this is socket: ', socket);
+      socket.emit('new_message', {
         username: this.state.username,
         content: this.state.content,
       });
