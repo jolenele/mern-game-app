@@ -1,6 +1,6 @@
 import React from 'react';
 // import config from './config';
-// import io from 'socket.io-client';
+//import io from 'socket.io-client';
 import socketIOClient from 'socket.io-client';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -16,14 +16,22 @@ class App extends React.Component {
       chat: [],
       content: '',
       username: '',
+      endpoint: 'http://localhost:3000/',
     };
-    this.socket = socketIOClient();
+    // this.socket = socketIOClient();
+  }
+
+  connectSocket() {
+    //const socket = socketIOClient.connect();
+    const socket = socketIOClient.connect(this.state.endpoint);
+    return socket;
   }
 
   componentDidMount() {
     // this.socket = io(config[process.env.NODE_ENV].endpoint);
-
-    this.socket.on('init', msg => {
+    const { endpoint } = this.state.endpoint;
+    const socket = socketIOClient.connect(endpoint);
+    socket.on('new_message', msg => {
       this.setState(
         state => ({
           chat: [...state.chat, ...msg.reverse()],
@@ -32,14 +40,14 @@ class App extends React.Component {
       );
     });
 
-    this.socket.on('push', msg => {
-      this.setState(
-        state => ({
-          chat: [...state.chat, msg],
-        }),
-        this.scrollToBottom
-      );
-    });
+    // this.socket.emit('new_message', msg => {
+    //   this.setState(
+    //     state => ({
+    //       chat: [...state.chat, msg],
+    //     }),
+    //     this.scrollToBottom
+    //   );
+    // });
   }
 
   handleContent(event) {
@@ -62,16 +70,26 @@ class App extends React.Component {
 
   handleSubmit(event) {
     console.log(event);
+    const { endpoint } = this.state.endpoint;
+    const socket = socketIOClient(endpoint);
 
     // Prevent the form to reload the current page.
     event.preventDefault();
 
     this.setState(state => {
       console.log(state);
-      console.log('this', this.socket);
-      this.socket.emit('message', {
+      console.log('this is socket ', socket);
+      socket.emit('new_message', {
         username: this.state.username,
         content: this.state.content,
+      });
+      socket.on('new_message', msg => {
+        this.setState(
+          state => ({
+            chat: [...state.chat, ...msg.reverse()],
+          }),
+          this.scrollToBottom
+        );
       });
 
       return {

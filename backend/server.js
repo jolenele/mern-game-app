@@ -1,10 +1,9 @@
 const express = require('express');
 const app = express();
-const cors = require('cors');
 const bodyParser = require('body-parser');
-const http = require('http').Server(app);
-const path = require('path');
-const io = require('socket.io')(http);
+const http = require('http');
+// const path = require('path');
+const socketIO = require('socket.io');
 const PORT = process.env.PORT || 4000;
 const Message = require('./database/model/Message');
 const connectDB = require('./database/config');
@@ -18,27 +17,20 @@ app.use(
     extended: false,
   })
 );
-app.use(cors());
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+// app.use(express.static(path.join(__dirname, '../public/index.html')));
 
-// error handler
-app.use(function(err, req, res, next) {
-  console.error(err.message);
-  if (!err.statusCode) err.statusCode = 500;
-  res.status(err.statusCode).send(err.message);
-});
+const server = http.createServer(app);
 
-http.listen(PORT, () => {
-  console.log('listening on :' + PORT);
-});
-
-app.listen = function() {
-  let server = http.createServer(this);
-  io.listen(server);
-  return server.listen.apply(server, arguments);
-};
+const io = socketIO(server);
 
 io.on('connection', socket => {
+  socket.on = 'Anonymous';
+  console.log('Socket connected');
+
+  socket.on('change_username', data => {
+    socket.username = data.username;
+  });
+
   // Get the last 10 messages from the database.
   Message.find()
     .sort({ createdAt: -1 })
@@ -48,11 +40,11 @@ io.on('connection', socket => {
       console.log(messages);
 
       // Send the last messages to the user.
-      io.sockets.emit('init', messages);
+      io.sockets.emit('new_message', messages);
     });
 
   // Listen to connected users for a new message.
-  socket.on('message', msg => {
+  socket.on('new_message', msg => {
     console.log('NEW MESSAGE : ' + msg);
     // Create a message with the content and the name of the user.
     const message = new Message({
@@ -65,14 +57,8 @@ io.on('connection', socket => {
       if (err) return console.error('erroooooor');
     });
 
-    io.sockets.emit('push', message);
-
-    // Notify all other users about a new message.
-    // socket.broadcast.emit('push', msg);
-  });
-
-  // Listen on typing
-  socket.on('typing', msg => {
-    socket.broadcast.emit('typing', { username: socket.username });
+    io.sockets.emit('new_message', message);
   });
 });
+
+server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
